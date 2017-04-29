@@ -1,0 +1,15 @@
+{
+  "name": "node-core",
+  "version": "1.0.0",
+  "description": "Core Node APIs walkthrough",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "node",
+    "api"
+  ],
+  "author": "Ishank",
+  "license": "ISC"
+}
