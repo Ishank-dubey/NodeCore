@@ -34,6 +34,28 @@ aEventM.on("error",function(err){console.log('err');});
 aEventM.anEmitterFunction();
 
 
+/*Scheduling using setTimeout and clearTimeout*/
+var timeoutTime = 1000; // one second
+var timeout = setTimeout(function() {
+console.log("timed out!");
+}, timeoutTime);
+clearTimeout(timeout);
+// When all the events in the Queue have been processed
+process.nextTick(function() {
+	console.log("process loop end");
+	});
+// Pattern to make sure that the async function only when the previous one is complete
+var interval = 1000; // 1 second
+(function schedule() {
+setTimeout(function do_it() {
+my_async_function(function() {
+console.log('async is done!');
+schedule();
+});
+}, interval);
+}());
+
+
 
 
 
