@@ -19,8 +19,6 @@ var anObj = function() {
 
 aUtil.inherits(anObj, EventEmitter);
 
-console.log();
-
 anObj.prototype.anEmitterFunction = function(){
 	this.emit('error', new Error('My mistake'));			
 };
