@@ -16,6 +16,7 @@ console.log('Server closed');
 server.on('connection', function(socket) {
 	console.log('got a new connection');
 	sockets.push(socket);
+	socket.write("Welcome BMS chat Room\n");
 	socket.on('data', function(data) {
 		sockets.forEach(function(otherSocket) {
 			if (otherSocket !== socket) {
