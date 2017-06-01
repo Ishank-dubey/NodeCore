@@ -11,5 +11,8 @@
     "api"
   ],
   "author": "Ishank",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "request": "^2.81.0"
+  }
 }

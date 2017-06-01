@@ -23,12 +23,12 @@ res.writeHead(403); res.end('Forbidden');
 	
 	  var filename = path.basename(file);
 	  //Download wont happen w/o setting content disposition
-	  //res.setHeader('Content-disposition', 'attachment; filename=' + filename);
+	  res.setHeader('Content-disposition', 'attachment; filename=' + filename);
 	  res.setHeader('Content-type', 'text/plain');
 	  rs = fs.createReadStream(file);
 	  rs.on('error', reportError);
 	  res.writeHead(200);
-	 // res.write("Starting Download");
+	  // res.write("Starting Download");
 	  rs.pipe(res,{end:false});
 	  rs.on("end",function(){
 		  res.end();
@@ -41,3 +41,19 @@ res.end('Not found');
 }
 });
 }).listen(4009);
+
+
+
+require('http').createServer(function(req, res) {
+	res.writeHead(200, {'Content-Type': 'text/plain'});
+	var left = 10;
+	var interval = setInterval(function() {
+	for(var i = 0; i< 100; i++) {
+	res.write(Date.now() + " ");
+	}
+	if (-- left === 0) {
+	clearInterval(interval);
+	res.end();
+	}
+	}, 1000);
+	}).listen(4010);
