@@ -13,6 +13,7 @@
   "author": "Ishank",
   "license": "ISC",
   "devDependencies": {
-    "request": "^2.81.0"
+    "request": "^2.81.0",
+    "tap": "^10.5.2"
   }
 }
