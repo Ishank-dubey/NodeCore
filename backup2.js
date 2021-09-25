@@ -196,15 +196,14 @@ async function getMaxPerNode(){
 	}
      let currentPath = resultsPath[currentPathIndex];
      let yesterday = getLastDay();
-
      if(currentPath.match("_Anchor") && !maxFound.includes(currentPath) ){
               let pathA, pathB;
                if(currentPath.match("PSC-DCIPDiameter_1.0_A_1_Anchor")){
                   pathA = currentPath;
-                  pathB = currentPath.replace("PSC-DCIPDiameter_1.0_A_1_Anchor","PSC-DCIPDiameter_1.0_B_1_Anchor");   
+                  pathB = currentPath.replace("PSC-DCIPDiameter_1.0_A_1_Anchor","PSC-DCIPDiameter_1.0_B_1_Anchor").replace("IP_A","IP_B");   
                } else {
                   pathB = currentPath;
-                  pathA = currentPath.replace("PSC-DCIPDiameter_1.0_B_1_Anchor","PSC-DCIPDiameter_1.0_A_1_Anchor");
+                  pathA = currentPath.replace("PSC-DCIPDiameter_1.0_B_1_Anchor","PSC-DCIPDiameter_1.0_A_1_Anchor").replace("IP_B","IP_A");
                }
               let pathAYesterday = `${path.parse(pathA).dir}/${path.parse(pathA).name}_${yesterday}.csv`;
               let pathBYesterday = `${path.parse(pathB).dir}/${path.parse(pathB).name}_${yesterday}.csv`;
@@ -231,27 +230,37 @@ async function getMaxPerNode(){
                    maxVal = findMaxFromArraysOfObj(ipAJson, ipBJson);
                    nodeId = currentPath.split('/')[4];
                    nodeName = currentPath.split('/')[5];
-                   let obj = getObjFromAll(nodeName, nodeId) || {};
+                   let obj = getObjFromAll(nodeName, nodeId);
+                   let pushFlag = !obj;
+                   obj = obj || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
                    obj.Anchor = maxVal; 
+                   if(pushFlag)
                    all.push(obj);
                 } else if(ipAJson && ipAJson.length && ipAJson[0].Succ != undefined) {
                     maxVal = findMaxSingle(ipAJson);
                    nodeId = currentPath.split('/')[4];
-                   nodeName = currentPath.split('/')[5];let obj = getObjFromAll(nodeName, nodeId) || {};
+                   nodeName = currentPath.split('/')[5];
+                   let obj = getObjFromAll(nodeName, nodeId);
+                   let pushFlag = !obj;
+                   obj = obj || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
                    obj.Anchor = maxVal; 
+                   if(pushFlag)
                    all.push(obj);
                  } else if(ipBJson && ipBJson.length && ipBJson.Succ!= undefined) {
                     maxVal = findMaxSingle(ipBJson);
                    nodeId = currentPath.split('/')[4];
                    nodeName = currentPath.split('/')[5];
-                   let obj = getObjFromAll(nodeName, nodeId) || {};
+                   let obj = getObjFromAll(nodeName, nodeId);
+                   let pushFlag = !obj;
+                   obj = obj || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
-                   obj.Anchor = maxVal; 
+                   obj.Anchor = maxVal;
+                   if(pushFlag) 
                    all.push(obj);
                  }
               
@@ -271,22 +280,26 @@ async function getMaxPerNode(){
                    let maxVal = findMaxForInternal(ipdJson);
                    let nodeId = currentPath.split('/')[4];
                    let nodeName = currentPath.split('/')[5];
-                   let obj = getObjFromAll(nodeName, nodeId) || {};
+                   let obj = getObjFromAll(nodeName, nodeId);
+                    let pushFlag = !obj;
+                   obj = obj || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
                    obj.Internal = maxVal; 
+                   if(pushFlag)
                    all.push(obj);
                    maxFound.push(currentPath);
        
      }
      else if(currentPath.match("_Remote") && !maxFound.includes(currentPath)){
+             
              let pathA, pathB;
                if(currentPath.match("PSC-DCIPDiameter_1.0_A_1_Remote")){
                   pathA = currentPath;
-                  pathB = currentPath.replace("PSC-DCIPDiameter_1.0_A_1_Remote","PSC-DCIPDiameter_1.0_B_1_Remote");   
+                  pathB = currentPath.replace("PSC-DCIPDiameter_1.0_A_1_Remote","PSC-DCIPDiameter_1.0_B_1_Remote").replace("IP_A","IP_B");   
                } else {
                   pathB = currentPath;
-                  pathA = currentPath.replace("PSC-DCIPDiameter_1.0_B_1_Remote","PSC-DCIPDiameter_1.0_A_1_Remote");
+                  pathA = currentPath.replace("PSC-DCIPDiameter_1.0_B_1_Remote","PSC-DCIPDiameter_1.0_A_1_Remote").replace("IP_B","IP_A");
                }
               let pathAYesterday = `${path.parse(pathA).dir}/${path.parse(pathA).name}_${yesterday}.csv`;
               let pathBYesterday = `${path.parse(pathB).dir}/${path.parse(pathB).name}_${yesterday}.csv`;
@@ -314,26 +327,36 @@ async function getMaxPerNode(){
                    nodeId = currentPath.split('/')[4];
                    nodeName = currentPath.split('/')[5];
                    let obj = getObjFromAll(nodeName, nodeId) || {};
+                    let pushFlag = !obj;
+                   obj = obj || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
-                   obj.Remote = maxVal; 
+                   obj.Remote = maxVal;
+                   if(pushFlag) 
                    all.push(obj);
                 } else if(ipAJson && ipAJson.length && ipAJson[0].Succ != undefined) {
                     maxVal = findMaxFromRemoteArray(ipAJson);
                    nodeId = currentPath.split('/')[4];
-                   nodeName = currentPath.split('/')[5];let obj = getObjFromAll(nodeName, nodeId) || {};
+                   nodeName = currentPath.split('/')[5];
+                   let obj = getObjFromAll(nodeName, nodeId);
+                    let pushFlag = !obj;
+                    obj = obj || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
                    obj.Remote = maxVal; 
+                   if(pushFlag)
                    all.push(obj);
                  } else if(ipBJson && ipBJson.length && ipBJson[0].Succ!= undefined) {
                     maxVal = findMaxFromRemoteArray(ipBJson);
                    nodeId = currentPath.split('/')[4];
                    nodeName = currentPath.split('/')[5];
-                   let obj = getObjFromAll(nodeName, nodeId) || {};
+                   let obj = getObjFromAll(nodeName, nodeId);
+                   let pushFlag = !obj;
+                    obj = obj || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
                    obj.Remote = maxVal; 
+                    if(pushFlag)
                    all.push(obj);
                  }
               
