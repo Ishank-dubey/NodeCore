@@ -60,7 +60,8 @@ lrmain.on('end', function (line) {
      console.log(resultsPath,'test');
 	 totalPaths = resultsPath.length;
      currentPathIndex = 0;
-     createFile();
+     //createFile();
+     getMaxPerNode();
 });
 function findMaxSingle(array=[]){
 
@@ -80,7 +81,7 @@ function findMaxFromArraysOfObj(array1 =[], array2=[]){
          let b= array2.filter((anObj)=> anObj.Hour == arg)[0];
          if(a && b){
              if(max < a.Succ+b.Succ){
-               max = a.Succ+b.Succ;
+               max = parseFloat(a.Succ)+parseFloat(b.Succ);
              }
          } else if(a){
             if(max < a.Succ){
@@ -94,6 +95,23 @@ function findMaxFromArraysOfObj(array1 =[], array2=[]){
     });
      return max;
 };
+function findMaxForInternal(array = []){
+     let max = 0;
+     let keys= ['00','01','02','03','04','05','06','07','08','09','10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'];
+     keys.forEach((arg) => { 
+        let arrayInternal = array.filter((obj)=> obj.Hour==arg && (obj.Category == 'Local Provider Get' || obj.Category =='Local Provider Update' ));
+        if(arrayInternal.length ==2 ){
+          if(max < arrayInternal[0].Succ + arrayInternal[1].Succ){
+           max = parseFloat(arrayInternal[0].Succ) + parseFloat(arrayInternal[1].Succ);
+              }
+        } else if(arrayInternal.length ==1){
+            if(max < arrayInternal[0].Succ){
+             max = parseFloat(arrayInternal[0].Succ);
+              }
+        }
+     });
+     return max;
+}
 function findMaxFromRemoteArray(array = []){
     let max = -Infinity;
      array.forEach((arg) => {
@@ -109,8 +127,8 @@ function findMaxFromRemoteArrays(array1 = [], array2 = []){
     let max = -Infinity;
     let keys= ['00','01','02','03','04','05','06','07','08','09','10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'];
     keys.forEach((arg)=>{
-         let a= array1.filter((anObj)=> anObj.Hour == arg)[0];
-         let b= array2.filter((anObj)=> anObj.Hour == arg)[0];
+         let a= array1.filter((anObj)=> anObj.Hour == arg && anObj.Category == 'DCIPDiameter')[0];
+         let b= array2.filter((anObj)=> anObj.Hour == arg && anObj.Category == 'DCIPDiameter')[0];
          if(a && b && a.Category=='DCIPDiameter' && b.Category =='DCIPDiameter'){
              if(max < a.Succ+b.Succ){
                max = a.Succ+b.Succ;
@@ -139,10 +157,41 @@ function getObjFromAll(nodeName, nodeId) {
       });
        return obj;
 }
-function async getMaxPerNode(){
+async function getMaxPerNode(){
       if(currentPathIndex == totalPaths){
-		console.log("Wrote Singleton csv file with Max values for yesterday");
-             
+		
+              //console.log(all);
+              
+              const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+              const csvWriter = createCsvWriter({
+		    path: `/root/SDP_BHC/tmp_New/DCIP.csv`,
+		    header: [
+		    	{id:'Node_id', title: 'Node_id'},
+		    	{id:'Node_name', title: 'Node_name'},
+		    	{id:'DCIP_Anchor', title: 'DCIP_Anchor'}, 
+		    	{id:'DCIP_Remote', title: 'DCIP_Remote'}, 
+		    	{id:'DCIP_Internal', title: 'DCIP_Internal'}
+		    ]
+		});
+		const rows = [];
+		
+			all.forEach((category) => {
+                            
+				rows.push({
+					Node_id: category.nodeId, 
+					Node_name: category.nodeName, 
+					DCIP_Anchor: category.Anchor || 0,
+					DCIP_Remote: category.Remote || 0,				
+					DCIP_Internal: category.Internal || 0
+				});	
+		
+		});
+		csvWriter.writeRecords(rows)
+	    .then(() => {
+	        console.log("Wrote Singleton csv file with Max values for yesterday");
+	    });
+
+
 		return 0;
 	}
      let currentPath = resultsPath[currentPathIndex];
@@ -180,8 +229,8 @@ function async getMaxPerNode(){
                let nodeName, nodeId;
                if(ipAJson && ipAJson.length && ipAJson[0].Succ != undefined && ipBJson && ipBJson.length && ipBJson.Succ!= undefined){
                    maxVal = findMaxFromArraysOfObj(ipAJson, ipBJson);
-                   nodeName = currentPath.split('/')[1];
-                   nodeId = currentPath.split('/')[2];
+                   nodeId = currentPath.split('/')[4];
+                   nodeName = currentPath.split('/')[5];
                    let obj = getObjFromAll(nodeName, nodeId) || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
@@ -189,16 +238,16 @@ function async getMaxPerNode(){
                    all.push(obj);
                 } else if(ipAJson && ipAJson.length && ipAJson[0].Succ != undefined) {
                     maxVal = findMaxSingle(ipAJson);
-                   nodeName = currentPath.split('/')[1];
-                   nodeId = currentPath.split('/')[2];let obj = getObjFromAll(nodeName, nodeId) || {};
+                   nodeId = currentPath.split('/')[4];
+                   nodeName = currentPath.split('/')[5];let obj = getObjFromAll(nodeName, nodeId) || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
                    obj.Anchor = maxVal; 
                    all.push(obj);
                  } else if(ipBJson && ipBJson.length && ipBJson.Succ!= undefined) {
                     maxVal = findMaxSingle(ipBJson);
-                   nodeName = currentPath.split('/')[1];
-                   nodeId = currentPath.split('/')[2];
+                   nodeId = currentPath.split('/')[4];
+                   nodeName = currentPath.split('/')[5];
                    let obj = getObjFromAll(nodeName, nodeId) || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
@@ -219,9 +268,9 @@ function async getMaxPerNode(){
               } catch(err) {
         
                }
-                   let maxVal = findMaxFromArraysOfObj(ipdJson);
-                   let nodeName = currentPath.split('/')[1];
-                   let nodeId = currentPath.split('/')[2];
+                   let maxVal = findMaxForInternal(ipdJson);
+                   let nodeId = currentPath.split('/')[4];
+                   let nodeName = currentPath.split('/')[5];
                    let obj = getObjFromAll(nodeName, nodeId) || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
@@ -262,8 +311,8 @@ function async getMaxPerNode(){
                let nodeName, nodeId;
                if(ipAJson && ipAJson.length && ipAJson[0].Succ != undefined && ipBJson && ipBJson.length && ipBJson.Succ!= undefined){
                    maxVal = findMaxFromRemoteArrays(ipAJson, ipBJson);
-                   nodeName = currentPath.split('/')[1];
-                   nodeId = currentPath.split('/')[2];
+                   nodeId = currentPath.split('/')[4];
+                   nodeName = currentPath.split('/')[5];
                    let obj = getObjFromAll(nodeName, nodeId) || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
@@ -271,16 +320,16 @@ function async getMaxPerNode(){
                    all.push(obj);
                 } else if(ipAJson && ipAJson.length && ipAJson[0].Succ != undefined) {
                     maxVal = findMaxFromRemoteArray(ipAJson);
-                   nodeName = currentPath.split('/')[1];
-                   nodeId = currentPath.split('/')[2];let obj = getObjFromAll(nodeName, nodeId) || {};
+                   nodeId = currentPath.split('/')[4];
+                   nodeName = currentPath.split('/')[5];let obj = getObjFromAll(nodeName, nodeId) || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
                    obj.Remote = maxVal; 
                    all.push(obj);
-                 } else if(ipBJson && ipBJson.length && ipBJson.Succ!= undefined) {
-                    maxVal = findMaxFromRemoteArrays(ipBJson);
-                   nodeName = currentPath.split('/')[1];
-                   nodeId = currentPath.split('/')[2];
+                 } else if(ipBJson && ipBJson.length && ipBJson[0].Succ!= undefined) {
+                    maxVal = findMaxFromRemoteArray(ipBJson);
+                   nodeId = currentPath.split('/')[4];
+                   nodeName = currentPath.split('/')[5];
                    let obj = getObjFromAll(nodeName, nodeId) || {};
                    obj.nodeName = nodeName;
                    obj.nodeId = nodeId;
